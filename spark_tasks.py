@@ -14,5 +14,6 @@ def sparktask(logfile):
 
     # eagerly detect a json-like response and return it
     for line in my_stdout.split(b'\n'):
+        print(line)
         if line.startswith(b'{'):
             return line
