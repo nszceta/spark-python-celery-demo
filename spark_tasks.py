@@ -1,14 +1,18 @@
 import subprocess
 from celery import Celery
 import json
+import os
+
 app = Celery('tasks', backend='redis://127.0.0.1/0', broker='amqp://api:api@localhost//')
 
 @app.task
 def sparktask(logfile):
-    proc = subprocess.Popen('spark-submit spark_work.py test.txt --master spark://abc123.local:7077/'.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    env = os.environ.copy()
+    env['PYSPARK_PYTHON'] = '/Users/adam/semanticmd/api/venv/bin/python'
+    proc = subprocess.Popen('spark-submit spark_work.py test.txt --master spark://abc123.local:7077/'.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
     my_stdout, my_stderr = proc.communicate()
-    print('stdout ' + '~' * 60)
-    print(my_stdout)
-    #print('stderr ' + '~' * 200)
-    #print(my_stderr)
-    return my_stdout if my_stdout else None
+
+    # eagerly detect a json-like response and return it
+    for line in my_stdout.split(b'\n'):
+        if line.startswith(b'{'):
+            return line

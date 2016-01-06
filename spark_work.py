@@ -1,7 +1,7 @@
 import sys
 from pyspark import SparkContext
 import json
-
+print('spark got python path -> ' + str(sys.executable))
 logfile = sys.argv[1]
 sc = SparkContext()
 logdata = sc.textFile(logfile).cache()
